@@ -1,7 +1,12 @@
 {
-  "atualizado_em": "2024-01-01T00:00:00Z",
+  "atualizado_em": "2026-03-31T02:43:55Z",
   "total": 0,
   "novos_nesta_coleta": 0,
-  "termos_monitorados": ["periferia", "periferias urbanas", "favela", "periferias"],
+  "termos_monitorados": [
+    "periferia",
+    "periferias urbanas",
+    "favela",
+    "periferias"
+  ],
   "trabalhos": []
 }
