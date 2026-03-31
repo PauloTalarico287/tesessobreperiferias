@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Periferia Watch — Teses & Dissertações</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --ink:       #0f0e0d;
+      --paper:     #f5f0e8;
+      --cream:     #ede8dc;
+      --rust:      #c0392b;
+      --rust-dark: #922b21;
+      --gold:      #b7860b;
+      --muted:     #7a7060;
+      --border:    #ccc4b0;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+    }
+
+    /* ── NOISE TEXTURE overlay ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 1000;
+    }
+
+    /* ── MASTHEAD ── */
+    header {
+      border-bottom: 3px double var(--ink);
+      padding: 0 2rem;
+    }
+
+    .masthead-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--border);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .masthead-center {
+      text-align: center;
+      padding: 2rem 0 1.5rem;
+    }
+
+    .site-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.8rem, 8vw, 5.5rem);
+      font-weight: 900;
+      line-height: 0.92;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+    }
+
+    .site-title em {
+      font-style: italic;
+      color: var(--rust);
+    }
+
+    .site-sub {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 0.75rem;
+    }
+
+    .masthead-rule {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 0;
+    }
+
+    .masthead-rule span {
+      height: 1px;
+      flex: 1;
+      background: var(--ink);
+    }
+
+    .masthead-rule b {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* ── TOOLBAR ── */
+    .toolbar {
+      background: var(--cream);
+      border-bottom: 1px solid var(--border);
+      padding: 0.9rem 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .search-wrap {
+      flex: 1;
+      min-width: 200px;
+      position: relative;
+    }
+
+    .search-wrap input {
+      width: 100%;
+      background: var(--paper);
+      border: 1px solid var(--border);
+      padding: 0.55rem 0.9rem 0.55rem 2.2rem;
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 0.85rem;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-wrap input:focus { border-color: var(--rust); }
+
+    .search-wrap svg {
+      position: absolute;
+      left: 0.6rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    .filter-group {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.38rem 0.8rem;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .chip:hover, .chip.active {
+      background: var(--ink);
+      color: var(--paper);
+      border-color: var(--ink);
+    }
+
+    .chip.active { background: var(--rust); border-color: var(--rust); color: #fff; }
+
+    .sort-select {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.68rem;
+      padding: 0.38rem 0.6rem;
+      border: 1px solid var(--border);
+      background: var(--paper);
+      color: var(--ink);
+      cursor: pointer;
+      outline: none;
+    }
+
+    /* ── STATS BAR ── */
+    .stats-bar {
+      padding: 0.6rem 2rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--muted);
+      flex-wrap: wrap;
+    }
+
+    .stats-bar strong { color: var(--ink); }
+
+    .badge-new {
+      background: var(--rust);
+      color: #fff;
+      padding: 0.15rem 0.5rem;
+      font-size: 0.62rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* ── GRID ── */
+    main {
+      padding: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 1.5rem;
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--paper);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: transform 0.2s, box-shadow 0.2s;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 4px 6px 0 var(--border);
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-accent {
+      height: 4px;
+      background: var(--rust);
+    }
+
+    .card-body { padding: 1.25rem 1.25rem 0.75rem; flex: 1; }
+
+    .card-meta {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .nivel-badge {
+      padding: 0.1rem 0.4rem;
+      font-size: 0.58rem;
+      border: 1px solid currentColor;
+    }
+
+    .nivel-doutorado { color: var(--rust); }
+    .nivel-mestrado  { color: var(--gold); }
+
+    .card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      line-height: 1.3;
+      margin-bottom: 0.5rem;
+      color: var(--ink);
+    }
+
+    .card-author {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+      font-style: italic;
+    }
+
+    .card-author strong { font-style: normal; color: var(--ink); font-weight: 500; }
+
+    .card-resumo {
+      font-size: 0.82rem;
+      line-height: 1.65;
+      color: #3a3630;
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card-footer {
+      padding: 0.75rem 1.25rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .card-instituicao {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .card-link {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--rust);
+      text-decoration: none;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      transition: color 0.15s;
+    }
+
+    .card-link:hover { color: var(--rust-dark); }
+
+    .tag-termo {
+      position: absolute;
+      top: 1.1rem;
+      right: 1.1rem;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: var(--cream);
+      border: 1px solid var(--border);
+      padding: 0.15rem 0.4rem;
+      color: var(--muted);
+    }
+
+    /* ── EMPTY / LOADING ── */
+    .estado {
+      text-align: center;
+      padding: 5rem 2rem;
+      color: var(--muted);
+    }
+
+    .estado-titulo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      color: var(--ink);
+    }
+
+    .spinner {
+      width: 32px; height: 32px;
+      border: 2px solid var(--border);
+      border-top-color: var(--rust);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 1.5rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 3px double var(--ink);
+      padding: 1.5rem 2rem;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    footer a { color: var(--rust); text-decoration: none; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 640px) {
+      .masthead-top { display: none; }
+      header, main, .toolbar, .stats-bar, footer { padding-left: 1rem; padding-right: 1rem; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="masthead-top">
+    <span>Fonte: Catálogo de Teses CAPES · BDTD/IBICT</span>
+    <span id="data-hoje"></span>
+    <span>Atualização Semanal — Automática</span>
+  </div>
+
+  <div class="masthead-center">
+    <h1 class="site-title"><em>Periferia</em><br>Watch</h1>
+    <p class="site-sub">Monitor de Pesquisas Acadêmicas sobre Periferias Urbanas</p>
+  </div>
+
+  <div class="masthead-rule">
+    <span></span>
+    <b>Teses · Dissertações · Doutorado · Mestrado</b>
+    <span></span>
+  </div>
+</header>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="search-wrap">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input type="text" id="busca" placeholder="Buscar por título, autor, instituição…" />
+  </div>
+
+  <div class="filter-group" id="filtros-nivel">
+    <button class="chip active" data-nivel="">Todos</button>
+    <button class="chip" data-nivel="DOUTORADO">Doutorado</button>
+    <button class="chip" data-nivel="MESTRADO">Mestrado</button>
+  </div>
+
+  <div class="filter-group" id="filtros-termo">
+    <button class="chip active" data-termo="">Todos termos</button>
+    <button class="chip" data-termo="periferia">Periferia</button>
+    <button class="chip" data-termo="periferias urbanas">Periferias urbanas</button>
+    <button class="chip" data-termo="favela">Favela</button>
+    <button class="chip" data-termo="periferias">Periferias</button>
+  </div>
+
+  <select class="sort-select" id="ordenar">
+    <option value="ano-desc">Mais recente</option>
+    <option value="ano-asc">Mais antigo</option>
+    <option value="titulo-asc">Título A→Z</option>
+  </select>
+</div>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <span>Total: <strong id="stat-total">—</strong></span>
+  <span>Exibindo: <strong id="stat-exibindo">—</strong></span>
+  <span>Atualizado: <strong id="stat-data">—</strong></span>
+  <span id="stat-novos" style="display:none">
+    <span class="badge-new">Novos</span> <strong id="stat-novos-n">—</strong> nesta semana
+  </span>
+</div>
+
+<!-- CONTEÚDO PRINCIPAL -->
+<main>
+  <div id="estado-loading" class="estado">
+    <div class="spinner"></div>
+    <p class="estado-titulo">Carregando pesquisas…</p>
+    <p>Buscando trabalhos sobre periferias urbanas</p>
+  </div>
+
+  <div id="estado-vazio" class="estado" style="display:none">
+    <p class="estado-titulo">Nenhum resultado encontrado</p>
+    <p>Tente outros termos ou remova os filtros.</p>
+  </div>
+
+  <div class="grid" id="grid"></div>
+</main>
+
+<footer>
+  <span>Periferia Watch — Monitor Acadêmico</span>
+  <span>Dados: <a href="https://catalogodeteses.capes.gov.br" target="_blank">CAPES</a></span>
+  <span>Código aberto — <a href="https://github.com" target="_blank">GitHub</a></span>
+</footer>
+
+<script>
+  // ── Estado global ──
+  let todos = [];
+  let filtroNivel = '';
+  let filtroTermo = '';
+  let textoBusca  = '';
+  let ordenar     = 'ano-desc';
+
+  // ── Carrega dados ──
+  async function carregarDados() {
+    try {
+      const resp = await fetch('data.json?v=' + Date.now());
+      const json = await resp.json();
+
+      todos = json.trabalhos || [];
+
+      // Atualiza stats
+      document.getElementById('stat-total').textContent = json.total || todos.length;
+      document.getElementById('stat-data').textContent  =
+        json.atualizado_em
+          ? new Date(json.atualizado_em).toLocaleDateString('pt-BR')
+          : '—';
+
+      if (json.novos_nesta_coleta > 0) {
+        document.getElementById('stat-novos').style.display = 'inline-flex';
+        document.getElementById('stat-novos-n').textContent = json.novos_nesta_coleta;
+      }
+
+      renderizar();
+    } catch (err) {
+      document.getElementById('estado-loading').innerHTML =
+        `<p class="estado-titulo">Erro ao carregar dados</p>
+         <p>Verifique se o arquivo data.json está presente.</p>`;
+    }
+  }
+
+  // ── Filtra e ordena ──
+  function filtrar() {
+    let lista = [...todos];
+
+    if (filtroNivel) {
+      lista = lista.filter(t =>
+        (t.nivel || '').toUpperCase().includes(filtroNivel.toUpperCase())
+      );
+    }
+
+    if (filtroTermo) {
+      lista = lista.filter(t => t.termo_origem === filtroTermo);
+    }
+
+    if (textoBusca) {
+      const q = textoBusca.toLowerCase();
+      lista = lista.filter(t =>
+        (t.titulo      || '').toLowerCase().includes(q) ||
+        (t.autor       || '').toLowerCase().includes(q) ||
+        (t.instituicao || '').toLowerCase().includes(q) ||
+        (t.resumo      || '').toLowerCase().includes(q) ||
+        (t.palavras_chave || '').toLowerCase().includes(q)
+      );
+    }
+
+    // Ordenação
+    lista.sort((a, b) => {
+      if (ordenar === 'ano-desc') return (b.ano || 0) - (a.ano || 0);
+      if (ordenar === 'ano-asc')  return (a.ano || 0) - (b.ano || 0);
+      if (ordenar === 'titulo-asc')
+        return (a.titulo || '').localeCompare(b.titulo || '', 'pt-BR');
+      return 0;
+    });
+
+    return lista;
+  }
+
+  // ── Renderiza cards ──
+  function renderizar() {
+    const lista = filtrar();
+    const grid  = document.getElementById('grid');
+
+    document.getElementById('estado-loading').style.display = 'none';
+
+    if (lista.length === 0) {
+      document.getElementById('estado-vazio').style.display = 'block';
+      grid.innerHTML = '';
+    } else {
+      document.getElementById('estado-vazio').style.display = 'none';
+      grid.innerHTML = lista.map((t, i) => criarCard(t, i)).join('');
+    }
+
+    document.getElementById('stat-exibindo').textContent = lista.length;
+  }
+
+  function criarCard(t, i) {
+    const nivel    = (t.nivel || '').toUpperCase();
+    const nivelCls = nivel.includes('DOUTORADO') ? 'nivel-doutorado' : 'nivel-mestrado';
+    const nivelLabel = nivel.includes('DOUTORADO') ? 'Doutorado' : nivel.includes('MESTRADO') ? 'Mestrado' : t.nivel || '';
+
+    const resumo   = t.resumo
+      ? `<p class="card-resumo">${esc(t.resumo)}</p>`
+      : '';
+
+    const link = t.biblioteca_url
+      ? `<a class="card-link" href="${esc(t.biblioteca_url)}" target="_blank" rel="noopener">
+           Ver trabalho
+           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+             <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
+           </svg>
+         </a>`
+      : `<a class="card-link" href="https://catalogodeteses.capes.gov.br/catalogo-teses/#!/" target="_blank" rel="noopener">
+           Buscar na CAPES ↗
+         </a>`;
+
+    return `
+    <article class="card" style="animation-delay:${Math.min(i * 0.04, 0.5)}s">
+      <div class="card-accent"></div>
+      <div class="card-body">
+        <div class="card-meta">
+          ${nivelLabel ? `<span class="nivel-badge ${nivelCls}">${nivelLabel}</span>` : ''}
+          ${t.ano ? `<span>${t.ano}</span>` : ''}
+          ${t.area ? `<span>${esc(t.area)}</span>` : ''}
+        </div>
+        <h2 class="card-title">${esc(t.titulo)}</h2>
+        <p class="card-author">
+          <strong>${esc(t.autor)}</strong>
+          ${t.orientador ? ` · orientador/a: ${esc(t.orientador)}` : ''}
+        </p>
+        ${resumo}
+      </div>
+      <div class="card-footer">
+        <span class="card-instituicao">${esc(t.instituicao || '')}${t.programa ? ` · ${esc(t.programa)}` : ''}</span>
+        ${link}
+      </div>
+      ${t.termo_origem ? `<span class="tag-termo">${esc(t.termo_origem)}</span>` : ''}
+    </article>`;
+  }
+
+  function esc(str) {
+    return String(str)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;');
+  }
+
+  // ── Eventos ──
+  document.getElementById('busca').addEventListener('input', e => {
+    textoBusca = e.target.value.trim();
+    renderizar();
+  });
+
+  document.getElementById('ordenar').addEventListener('change', e => {
+    ordenar = e.target.value;
+    renderizar();
+  });
+
+  document.querySelectorAll('#filtros-nivel .chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#filtros-nivel .chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filtroNivel = btn.dataset.nivel;
+      renderizar();
+    });
+  });
+
+  document.querySelectorAll('#filtros-termo .chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#filtros-termo .chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filtroTermo = btn.dataset.termo;
+      renderizar();
+    });
+  });
+
+  // Data de hoje no masthead
+  document.getElementById('data-hoje').textContent =
+    new Date().toLocaleDateString('pt-BR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+
+  // Inicia
+  carregarDados();
+</script>
+</body>
+</html>
